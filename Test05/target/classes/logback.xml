@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE xml>
+<configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="http://www.padual.com/java/logback.xsd" 
+    debug="true" packagingData="true" scan="true" scanPeriod="30 seconds">
+
+
+	<appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+			<pattern>
+				▶ %-5level %d{HH:mm:ss.SSS} [%thread] %logger[%method:%line] - %msg%n
+			</pattern>
+		</encoder>
+	</appender>
+
+	<logger name="com.edu.spring" level="debug">
+	</logger>
+
+	<!-- 3rdparty Loggers -->
+	<logger name="org.springframework.core">
+		<level value="INFO" />
+	</logger>
+	
+	<logger name="org.springframework.beans">
+		<level value="INFO" />
+	</logger>
+	
+	<logger name="org.springframework.context">
+		<level value="INFO" />
+	</logger>
+
+	<logger name="org.springframework.web">
+		<level value="INFO" />
+	</logger>
+
+	<root level="debug">
+		<appender-ref ref="console" />
+	</root>
+	
+	<!-- net.sf.log4jdbc.sql.jdbcapi.DriverSpy -->
+	<include resource="org/springframework/boot/logging/logback/base.xml" />
+	<logger name="jdbc.splonly" level="DEBUG" />
+	<logger name="jdbc.sqltiming" level="INFO" />
+	<logger name="jdbc.audit" level="WARN" />
+	<logger name="jdbc.resultset" level="ERROR" />
+	<logger name="jdbc.resultsettable" level="DEBUG" />
+	<logger name="jdbc.connection" level="INFO" />
+	
+
+</configuration>
+
+

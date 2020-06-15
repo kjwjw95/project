@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+	
+	<mapper namespace="user">
+	<select id="login" parameterType="hashmap" resultType="int">
+    SELECT COUNT(*) FROM USERINFO
+    WHERE ID = #{id}
+  
+		<if test="password != null and password != ''">	
+			
+				AND PASS = #{password}
+			
+		</if>
+       
+    </select>
+    
+    <insert id="create">
+	INSERT INTO USERINFO(
+				ID,
+				PASS,
+				NAME,
+				INSDATE,
+				USEYN
+	) VALUES(
+	#{id},
+	#{password},
+	#{name},
+	to_date(sysdate,'yy/mm/dd'),
+	'Y'
+	
+	)
+	
+	</insert>
+	
+	<insert id="createDetail">
+	INSERT INTO USERINFODETAIL(
+				ID,
+				USERINFODETAILCD,
+				RELCD,
+				ADDRCD,
+				ADDRNAME,
+				MOBILETELNO,
+				HOMETELNO,
+				INSUSER,
+				INSDATE,
+				USEYN,
+				DELIVNAME
+	) VALUES(
+	#{id},
+	(SELECT NVL2(MAX(USERINFODETAILCD),'U' || LPAD(REPLACE(MAX(USERINFODETAILCD),'U') +1,8,'0'),'U00000001') FROM USERINFODETAIL),
+	#{relcd},
+	#{addrcd},
+	#{addrname},
+	#{mobiletelno},
+	#{hometelno},
+	'신규가입자',
+	#{insdate},
+	#{useyn},
+	#{name}
+	)
+	
+	</insert>
+    
+    
+	</mapper>

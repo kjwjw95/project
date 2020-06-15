@@ -1,0 +1,291 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+	
+	<mapper namespace="codemng">
+	<select id="codelist" parameterType="hashmap" resultType="com.aa.bb.domain.CodemngVO">
+    <![CDATA[
+    	SELECT
+    		CDNO,
+    		CDLVL,
+    		UPCD,
+    		CDNAME,
+    		USEYN
+    	FROM CODEMNG
+    	WHERE 1=1
+    	START WITH REPLACE(CDNO,'C') = 0
+    	connect by PRIOR CDNO = UPCD
+    	ORDER SIBLINGS BY CDNO
+       ]]>	
+    </select>
+    
+    <select id="categori" parameterType="hashmap" resultType="com.aa.bb.domain.CodemngVO">
+    <![CDATA[
+    	SELECT
+    		CDNO,
+    		CDLVL,
+    		UPCD,
+    		CDNAME,
+    		USEYN
+    	FROM CODEMNG
+    	WHERE CDLVL='2'
+    	AND UPCD='C0001'
+       ]]>	
+    </select>
+    
+    <select id="madename" parameterType="hashmap" resultType="com.aa.bb.domain.CodemngVO">
+    <![CDATA[
+    	SELECT
+    		CDNO,
+    		CDLVL,
+    		UPCD,
+    		CDNAME,
+    		USEYN
+    	FROM CODEMNG
+    	WHERE CDLVL='2'
+    	AND UPCD='C0050'
+       ]]>	
+    </select>
+    
+    <select id="unitname" parameterType="hashmap" resultType="com.aa.bb.domain.CodemngVO">
+    <![CDATA[
+    	SELECT
+    		CDNO,
+    		CDLVL,
+    		UPCD,
+    		CDNAME,
+    		USEYN
+    	FROM CODEMNG
+    	WHERE CDLVL='2'
+    	AND UPCD='C0060'
+       ]]>	
+    </select>
+    
+    <select id="classfication" parameterType="hashmap" resultType="com.aa.bb.domain.CodemngVO">
+    <![CDATA[
+    	SELECT
+    		CDNO,
+    		CDLVL,
+    		UPCD,
+    		CDNAME,
+    		USEYN
+    	FROM CODEMNG
+    	WHERE CDLVL='3'
+    	AND UPCD=#{cdno}
+       ]]>	
+    </select>
+    
+    <update id="itemupdate" parameterType="hashmap">
+    	UPDATE	ITEMLIST
+    	SET
+    		ITEMNAME = #{itemname},
+    		MADENMCD = #{madenmcd},
+    		ITEMUNITCD = #{itemunitcd},
+    		USEYN = #{useyn} 
+    	WHERE ITEMCD = #{itemcd}
+    	
+    
+    
+    </update>
+    <insert id="codeinsert">
+    	INSERT INTO CODEMNG(
+				CDNO,
+				CDLVL,
+				UPCD,
+				CDNAME,
+				INSUSER,
+				INSDATE,
+				USEYN
+	) VALUES(
+	(SELECT NVL2(MAX(cdno),'C' || LPAD(REPLACE(MAX(cdno),'C') +1,4,'0'),'C0001') FROM CODEMNG),
+	#{cdlvl},
+	#{upcd},
+	#{cdname},
+	'관리자',
+	to_date(sysdate,'yy/mm/dd'),
+	#{useyn}
+	
+	)
+    
+    </insert>
+    
+    <insert id="iteminsert" parameterType="hashmap">
+    	INSERT INTO ITEMLIST(
+				ITEMCD,
+				ITEMNAME,
+				MADENMCD,
+				ITEMUNITCD,
+				STOCKAMT,
+				STOCKYN,
+				INSUSER,
+				INSDATE,
+				USEYN,
+				ITEMCLSCD
+	) VALUES(
+	(SELECT NVL2(MAX(ITEMCD),'I' || LPAD(REPLACE(MAX(ITEMCD),'I') +1,4,'0'),'I0001') FROM ITEMLIST),
+	#{itemname},
+	#{madenmcd},
+	#{itemunitcd},
+	'1',
+	'Y',
+	'관리자',
+	to_date(sysdate,'yy/mm/dd'),
+	#{useyn},
+	#{itemclscd}
+	
+	)
+    
+    </insert>
+    
+    
+    <select id="itemlist" parameterType="hashmap" resultType="com.aa.bb.domain.ItemVO">
+       SELECT 
+		i.ITEMCD,
+		i.ITEMNAME,
+		i.MADENMCD,
+		a.CDNAME AS maden,
+		i.ITEMUNITCD,
+		b.CDNAME AS itemunit,
+		i.STOCKAMT,
+		i.STOCKYN,
+		i.USEYN
+	FROM ITEMLIST i, CODEMNG a, CODEMNG b
+	WHERE a.CDNO = i.MADENMCD AND b.CDNO = i.ITEMUNITCD
+	AND i.ITEMCLSCD = #{cdno}
+	ORDER BY ITEMCD ASC
+    </select>
+    
+    <select id="initemlist" parameterType="hashmap" resultType="com.aa.bb.domain.InItemVO">
+       SELECT 
+		i.ITEMCD,
+		i.ITEMNAME,
+		i.MADENMCD,
+		a.CDNAME AS maden,
+		i.ITEMUNITCD,
+		b.CDNAME AS itemunit,
+		T.INSAMT,
+		T.INSITEMLISTCD
+	FROM ITEMLIST i, CODEMNG a, CODEMNG b, INITEMLIST T
+	WHERE a.CDNO = i.MADENMCD AND b.CDNO = i.ITEMUNITCD AND T.ITEMCD=i.ITEMCD
+	AND T.INSDATE = to_date(sysdate,'yy/mm/dd') AND T.ITEMCD=#{itemcd}
+	ORDER BY ITEMCD ASC
+    </select>
+    
+    <insert id="initeminsert" parameterType="hashmap">
+    	INSERT INTO INITEMLIST(
+				ITEMCD,
+				INSITEMLISTCD,
+				INSAMT,
+				INSDATE,
+				INSUSER
+	) VALUES(
+	#{itemcd},
+	(SELECT NVL2(MAX(INSITEMLISTCD),'II' || LPAD(REPLACE(MAX(INSITEMLISTCD),'II') +1,8,'0'),'I00000001') FROM INITEMLIST),
+	#{insamt},
+	to_date(sysdate,'yy/mm/dd'),
+	'관리자'
+	)
+    
+    </insert>
+    
+    <update id="initemupdate1" parameterType="hashmap">
+    	UPDATE	INITEMLIST
+    	SET
+    		INSAMT = #{insamt}
+    	WHERE INSITEMLISTCD = #{insitemlistcd}
+    	
+    	
+    
+    
+    </update>
+    <update id="initemupdate2" parameterType="hashmap">
+    <![CDATA[
+    	UPDATE ITEMLIST
+		SET STOCKAMT=
+		CASE
+    		WHEN	(SELECT INSAMT FROM INITEMLIST WHERE ITEMCD=#{itemcd} AND INSITEMLISTCD=#{insitemlistcd}) < #{insamt}
+    		THEN	STOCKAMT + (#{insamt}-(SELECT INSAMT FROM INITEMLIST WHERE ITEMCD=#{itemcd} AND INSITEMLISTCD=#{insitemlistcd}))
+    	ELSE 
+    		STOCKAMT - ((SELECT INSAMT FROM INITEMLIST WHERE ITEMCD=#{itemcd} AND INSITEMLISTCD=#{insitemlistcd})-#{insamt})
+    	END
+    	WHERE ITEMCD=#{itemcd}
+		]]>
+    	
+    </update>
+    <update id="initemupdate3" parameterType="hashmap">
+    <![CDATA[
+    	UPDATE ITEMLIST
+		SET STOCKAMT= STOCKAMT+ #{insamt}
+    	WHERE ITEMCD=#{itemcd}
+		]]>
+    	
+    </update>
+    
+    <select id="outitemlist" resultType="com.aa.bb.domain.OutItemVO">
+     <![CDATA[
+     	SELECT
+			O.ITEMCD,
+			I.ITEMNAME,
+			I.MADENMCD,
+			(SELECT CDNAME FROM CODEMNG WHERE CDNO=I.MADENMCD) AS MADENNAME,
+			(SELECT CDNAME FROM CODEMNG WHERE CDNO=I.ITEMUNITCD) AS UNITNAME,
+			O.DELIVAMT,
+			U.ID,
+			U.DELIVNAME,
+			(SELECT CDNAME FROM CODEMNG WHERE CDNO=U.RELCD) AS RELCD,
+			U.ADDRCD,
+			U.ADDRNAME,
+			NVL(U.MOBILETELNO,'없음') AS MOBILETELNO, 
+			NVL(U.HOMETELNO,'없음') AS HOMETELNO,
+			O.CHECKYN,
+			O.DELIVYN,
+			(SELECT CDNAME FROM CODEMNG WHERE CDNO=O.DELIVCORPCD) AS DELIVCOM,
+			O.DELIVNO,
+			I.STOCKAMT,
+			O.OUTITEMLISTCD
+	
+		FROM
+			OUTITEMLIST O, ITEMLIST I, USERINFODETAIL U
+		WHERE 
+			O.ITEMCD = I.ITEMCD AND O.USERINFODETAILCD=U.USERINFODETAILCD
+     ]]>
+    
+    </select>
+    <update id="outitemupdate" parameterType="hashmap">
+    <![CDATA[
+    	UPDATE OUTITEMLIST 
+ 		SET		
+ 		CHECKYN= #{checkyn},
+ 		DELIVYN = #{delivyn},
+ 		DELIVCORPCD = #{delivcorpcd},
+ 		DELIVNO = #{delivno}
+
+ 		WHERE OUTITEMLISTCD=#{outitemlistcd}
+		]]>
+    	
+    </update>
+    <select id="delivlist" parameterType="hashmap" resultType="com.aa.bb.domain.CodemngVO">
+    <![CDATA[
+    	SELECT
+    		CDNO,
+    		CDLVL,
+    		UPCD,
+    		CDNAME,
+    		USEYN
+    	FROM CODEMNG
+    	WHERE CDLVL='2'
+    	AND UPCD='C0080'
+       ]]>	
+    </select>
+    
+    <update id="stockupdate" parameterType="hashmap">
+    <![CDATA[
+    	UPDATE ITEMLIST
+		SET STOCKAMT= STOCKAMT - #{delivamt}
+    	WHERE ITEMCD=#{itemcd}
+		]]>
+    	
+    </update>
+    
+	</mapper>

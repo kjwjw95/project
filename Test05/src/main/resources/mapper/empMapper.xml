@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+	
+	<mapper namespace="emp">
+	
+	<insert id="create">
+	INSERT INTO EMP(
+				ENAME,
+				COMM,
+				HIREDATE,
+				EMPNO,
+				MGR,
+				JOB,
+				DEPTNO,
+				SAL
+	) VALUES(
+	#{ename},
+	#{comm},
+	to_date(sysdate,'yyyy-mm-dd hh24:mi:ss'),
+	#{empno},
+	#{mgr},
+	#{job},
+	#{deptno},
+	#{sal}
+	
+	)
+	
+	</insert>
+	
+	<delete id="delete" >
+		DELETE FROM EMP
+		WHERE EMPNO=#{empno}
+	</delete>
+
+    <select id="selectEmpList" parameterType="hashmap" resultType="com.aa.bb.domain.BoardVO">
+		<![CDATA[
+			SELECT 
+				ROWNUM AS RECID,
+				ENAME,
+				COMM,
+				HIREDATE,
+				EMPNO,
+				MGR,
+				JOB,
+				DEPTNO,
+				SAL
+			FROM EMP
+			WHERE 1 = 1
+			ORDER BY HIREDATE desc
+		]]>		
+			
+		<if test="empNo != null and empNo != ''">	
+			<![CDATA[
+				AND EMPNO = #{empNo}
+			]]>		
+		</if>
+		<if test="deptNo != null and deptNo != ''">	
+			<![CDATA[
+				AND DEPTNO = #{deptNo}
+			]]>		
+		</if>
+
+    </select>
+    
+    <select id="search" parameterType="hashmap" resultType="com.aa.bb.domain.BoardVO">
+    <![CDATA[
+			SELECT 
+				ROWNUM AS RECID,
+				ENAME,
+				COMM,
+				HIREDATE,
+				EMPNO,
+				MGR,
+				JOB,
+				DEPTNO,
+				SAL
+			FROM EMP
+			WHERE ${searchOption} like '%'||#{keyword}||'%'  
+			ORDER BY HIREDATE desc
+		]]>		
+    
+    </select>
+    
+    <select id="count" parameterType="hashmap" resultType="int">
+    SELECT COUNT(*) FROM EMP
+    WHERE ${searchOption} like '%'||#{keyword}||'%'    
+    </select>
+    
+    <sql id="search">
+    	WHERE ${searchOption} like '%'||#{keyword}||'%'    
+    </sql>
+
+</mapper>
